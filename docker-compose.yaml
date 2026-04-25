@@ -11,8 +11,8 @@ services:
       args:
         TESSERACT_VERSION: ${TESSERACT_VERSION}
     volumes:
-      - ./shared/text_out:/text
-      - ./shared/pic_in:/pic/
+      - ${PATH_TEXT_OUT}:/text
+      - ${PATH_PIC_IN}:/pic/
     networks:
       - tevox_net
     depends_on:
@@ -28,8 +28,8 @@ services:
         VOICE_LANGUAGE: ${VOICE_LANGUAGE}
         VOICE_LANGUAGE_FAMILY: ${VOICE_LANGUAGE_FAMILY}
     volumes:
-      - ./shared/voice_out:/output
-      - ./shared/text_out:/input/
+      - ${PATH_VOICE_OUT}:/output
+      - ${PATH_TEXT_OUT}:/input/
 
   rabbitmq:
     image: rabbitmq:4.3.0-rc.0-management-alpine
