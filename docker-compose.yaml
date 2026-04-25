@@ -1,0 +1,50 @@
+services:
+  base:
+    build:
+      context: ./base
+    image: tevox_vase:latest
+
+  ocr_service:
+    build: 
+      context: .
+      dockerfile: ocr_service/Dockerfile
+      args:
+        TESSERACT_VERSION: ${TESSERACT_VERSION}
+    volumes:
+      - ./shared/text_out:/text
+      - ./shared/pic_in:/pic/
+    networks:
+      - tevox_net
+    depends_on:
+      - rabbitmq
+
+  piper:
+    build: 
+      context: .
+      dockerfile: piper/Dockerfile
+      args:
+        VOICE_NAME: ${VOICE_NAME}
+        VOICE_QUALITY: ${VOICE_QUALITY}
+        VOICE_LANGUAGE: ${VOICE_LANGUAGE}
+        VOICE_LANGUAGE_FAMILY: ${VOICE_LANGUAGE_FAMILY}
+    volumes:
+      - ./shared/voice_out:/output
+      - ./shared/text_out:/input/
+
+  rabbitmq:
+    image: rabbitmq:4.3.0-rc.0-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - tevox_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5672"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  tevox_net:
+    driver: bridge
