@@ -25,3 +25,7 @@ func GetRetryNumber(x_death_header interface{}, queueResultingDeath string) int 
 func GetQueueConfig(name string) config.QueueConf {
 	return config.QueuesNames[name]
 }
+
+func CreateErrorChannel() chan *amqp091.Error {
+	return make(chan *amqp091.Error)
+}

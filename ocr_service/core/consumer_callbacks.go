@@ -19,8 +19,7 @@ func ScanImageEventConsumer(feed <-chan amqp091.Delivery, queueName string) {
 
 	qConf := queues.GetQueueConfig(queueName)
 
-	for {
-		msg := <-feed
+	for msg := range feed {
 
 		log.SetPrefix("DELIVERY[" + strconv.Itoa(int(msg.DeliveryTag)) + "] ")
 		log.Println("Message received from queue", msg.Body)
