@@ -36,4 +36,3 @@ WORKDIR /app
 COPY ./ocr_service .
 
 CMD ["/go1.24.4/go/bin/go", "run", "."]
-#CMD ["sh", "-c", "tesseract --tessdata-dir ./ /pic/image - -l eng > /text/out.txt"]

@@ -18,10 +18,10 @@ services:
     depends_on:
       - rabbitmq
 
-  piper:
+  voice_service:
     build: 
       context: .
-      dockerfile: piper/Dockerfile
+      dockerfile: voice_service/Dockerfile
       args:
         VOICE_NAME: ${VOICE_NAME}
         VOICE_QUALITY: ${VOICE_QUALITY}
@@ -30,6 +30,10 @@ services:
     volumes:
       - ${PATH_VOICE_OUT}:/output
       - ${PATH_TEXT_OUT}:/input/
+    depends_on:
+      - rabbitmq
+    networks:
+      - tevox_net
 
   rabbitmq:
     image: rabbitmq:4.3.0-rc.0-management-alpine

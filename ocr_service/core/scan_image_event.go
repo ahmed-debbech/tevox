@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -26,16 +27,22 @@ func ProcessScanImageEvent(msg []byte) error {
 	}
 
 	if !checkFileExists(request.FileName) {
-		return errors.New("image file does not exist " + err.Error())
+		return errors.New("image file does not exist")
 	}
 
-	if err := launchTesseract(request.FileName); err != nil {
+	textFileName, err := launchTesseract(request.FileName)
+	if err != nil {
 		return errors.New("something failed with tesseract :" + err.Error())
 	}
 
-	if err := queues.Publish(config.QueuesNames["B_QUEUE"].Name, msg, nil); err != nil {
+	response := model.ProcessTextToVoiceRequest{
+		TextFileName: textFileName,
+	}
+	responseBytes, _ := json.Marshal(response)
+	if err := queues.Publish(config.QueuesNames["B_QUEUE"].Name, []byte(responseBytes), nil); err != nil {
 		log.Println(err)
 	}
+	log.Println("Processed image successfully into text, pushed to queue")
 	return nil
 }
 
@@ -55,12 +62,13 @@ func sanitize(request model.ScanImageEventRequest) bool {
 	}
 	return true
 }
-func launchTesseract(fileName string) error {
+func launchTesseract(fileName string) (string, error) {
 
 	defer log.SetPrefix("")
 	log.SetPrefix("[TESSERACT-0] ")
 	// Start a long-running process, capture stdout and stderr
-	findCmd := cmd.NewCmd("sh", "-c", "tesseract --tessdata-dir ../tesseract /pic/"+fileName+" - -l eng > /text/out.txt")
+	textFileName := "out_" + strconv.Itoa(int(time.Now().Unix()))
+	findCmd := cmd.NewCmd("sh", "-c", "tesseract --tessdata-dir ../tesseract /pic/"+fileName+" - -l eng > /text/"+textFileName)
 	statusChan := findCmd.Start() // non-blocking
 	log.Println("Started tesseract")
 	ticker := time.NewTicker(2 * time.Second)
@@ -89,7 +97,7 @@ func launchTesseract(fileName string) error {
 		} else {
 			log.Println("[STDERR]", strings.Join(finalStatus.Stderr, "\n[STDERR]")) //make this line out put to error file
 			log.Println("ERROR! Something went wrong when running tesseract, exit code:", finalStatus.Exit)
-			return errors.New("ERROR! Something went wrong when running tesseract")
+			return "", errors.New("ERROR! Something went wrong when running tesseract")
 		}
 	case <-time.After(10 * time.Second):
 		err := findCmd.Stop()
@@ -99,5 +107,5 @@ func launchTesseract(fileName string) error {
 		log.Println("[TIMEOUT] tevox killed tesseract")
 	}
 
-	return nil
+	return textFileName, nil
 }
