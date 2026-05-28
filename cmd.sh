@@ -2,8 +2,8 @@
 
 if [[ $1 == "build" ]]; then
     docker compose down || true
-    docker compose build base
-    docker compose up --build
+    docker compose build
+    docker compose up --build --no-attach rabbitmq
 fi
 
 

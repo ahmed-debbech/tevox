@@ -35,6 +35,17 @@ services:
     networks:
       - tevox_net
 
+  requests_service:
+    build: 
+      context: .
+      dockerfile: requests_service/Dockerfile
+    volumes:
+      - ${PATH_PIC_IN}:/output
+    depends_on:
+      - rabbitmq
+    networks:
+      - tevox_net
+
   rabbitmq:
     image: rabbitmq:4.3.0-rc.0-management-alpine
     ports:

@@ -3,7 +3,7 @@ package config
 var (
 	QueuesNames = map[string]QueueConf{
 		"A_QUEUE": QueueConf{
-			Name:     "ocr_rquest_q",
+			Name:     "ocr_request_q",
 			Consumer: true,
 			Dlq:      QueueInternals{Name: "ocr_request_dlq_q", Ttl: 0},
 			Retry:    QueueInternals{Name: "ocr_request_retry_q", Ttl: 5000},
