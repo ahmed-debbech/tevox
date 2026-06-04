@@ -26,7 +26,7 @@ public class MessageProcessor {
     }
 
     public void appendMessage(Message message){
-        this.internalQueue.add(message);
+        this.internalQueue.add(message); log.info("{} / {}", internalQueue.peek().getStanzaId(), internalQueue.size());
     }
 
 }
