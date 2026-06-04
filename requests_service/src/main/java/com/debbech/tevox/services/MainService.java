@@ -19,7 +19,7 @@ public class MainService {
         log.info("connecting to rabbitmq...");
 
         try {
-            RabbitMqService rms = new RabbitMqService();
+            QueuesService rms = new QueuesService();
             rms.defineAllQueues();
             log.info("connected to rabbitmq successfully");
             Thread.sleep(5000);

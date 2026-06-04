@@ -4,6 +4,8 @@ FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
 COPY requests_service/pom.xml .
 COPY requests_service/src ./src
+RUN mkdir /root/.m2
+COPY .m2 /root/.m2
 RUN mvn clean package -DskipTests
 
 # Stage 2: Run the JAR
