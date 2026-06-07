@@ -3,9 +3,18 @@ package com.debbech.tevox.services;
 import com.debbech.tevox.models.DocumentEvent;
 import com.debbech.tevox.models.Message;
 import com.debbech.tevox.models.MessageType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectWriter;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -38,11 +47,40 @@ public class MessageProcessor {
     }
 
     private String downloadImageAndGetPath(String url){
-        return null;
+        Instant instant = Instant.now();
+        long timeStampSeconds = instant.getEpochSecond();
+        String outputFile = "/output/" + timeStampSeconds;
+
+        OkHttpClient client = new OkHttpClient();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new IOException("Failed: " + response);
+            }
+
+            try (FileOutputStream fos = new FileOutputStream(outputFile)) {
+                fos.write(response.body().bytes());
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } catch (IOException e) {
+            log.error("an error occurred when downloading image... because {}", e.getMessage());
+            return null;
+        }
+
+        return outputFile;
     }
 
     private void emitEvent(){
-
+        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        String json = ow.writeValueAsString(this.potentialEvent);
+        log.info("event {}", json);
     }
 
     private void buildTransmittableEvent(){
@@ -57,24 +95,25 @@ public class MessageProcessor {
             if((potentialEvent.getTitle() == null) || (potentialEvent.getTitle().isEmpty())){
                 if(!msg.getMessageType().equals(MessageType.TEXT)) continue;
                 if(!msg.getBody().startsWith("a ")) continue;
-                potentialEvent.setTitle(msg.getBody());
+                potentialEvent.setTitle(msg.getBody().substring(2));
                 log.info("this is a new event that starts with {}", potentialEvent.getTitle());
             }
 
             if(msg.getMessageType().equals(MessageType.IMAGE)){
+                log.info("there is a new image added to {}", potentialEvent.getTitle());
                 String path = downloadImageAndGetPath(msg.getBody());
+                if(path == null) continue;
+
                 if(potentialEvent.getImagePaths() == null){
                     potentialEvent.setImagePaths(new ArrayList<>());
                 }
                 potentialEvent.getImagePaths().add(path);
-                log.info("there has been new image added to {}, on img {}", potentialEvent.getTitle(), potentialEvent.getImagePaths().size());
             }
 
-            log.info("eidiejd {}", msg.getBody());
             if(msg.getMessageType().equals(MessageType.TEXT)){
                 if(!msg.getBody().equals("b")) continue;
-                emitEvent();
                 log.info("a new event is about to get transmitted {}", this.potentialEvent);
+                emitEvent();
                 this.potentialEvent = null;
             }
 
