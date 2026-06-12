@@ -4,6 +4,8 @@ import com.debbech.tevox.config.Secrets;
 
 import com.debbech.tevox.models.MessageType;
 import org.jivesoftware.smack.*;
+import org.jivesoftware.smack.chat2.Chat;
+import org.jivesoftware.smack.chat2.ChatManager;
 import org.jivesoftware.smack.filter.StanzaTypeFilter;
 import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.packet.Message;
@@ -11,10 +13,12 @@ import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jivesoftware.smackx.ping.PingManager;
+import org.jxmpp.jid.EntityBareJid;
+import org.jxmpp.jid.impl.JidCreate;
+import org.jxmpp.stringprep.XmppStringprepException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -22,7 +26,18 @@ public class XMPPService {
 
     private Logger log = LoggerFactory.getLogger(this.getClass());
 
-    private XMPPTCPConnection connection;
+    private static XMPPTCPConnection connection;
+    private static XMPPService instance = null;
+
+    private XMPPService(){
+
+    }
+    public static XMPPService getInstance(){
+        if(instance == null){
+            instance = new XMPPService();
+        }
+        return instance;
+    }
 
     private void maintainConnection(){
         CompletableFuture<Void> disconnected = new CompletableFuture<>();
@@ -84,14 +99,14 @@ public class XMPPService {
                         log.info("processing Image coming from XMPP server");
                         String id = message.getStanzaId();
                         String body = message.getBody();
-                        m = new com.debbech.tevox.models.Message(id, body, MessageType.IMAGE);
+                        m = new com.debbech.tevox.models.Message(id, body, MessageType.IMAGE, message.getFrom().toString());
                     }else{
                         if((xml.contains("<body>") &&
                                 (!xml.substring(xml.indexOf("<body>")+6).startsWith("</bo")))){
                             log.info("processing text message coming from XMPP server");
                             String id = message.getStanzaId();
                             String body = message.getBody();
-                            m = new com.debbech.tevox.models.Message(id, body, MessageType.TEXT);
+                            m = new com.debbech.tevox.models.Message(id, body, MessageType.TEXT, message.getFrom().toString());
                         }
                     }
                     if(m != null) MessageProcessor.getInstance().appendMessage(m);
@@ -102,5 +117,22 @@ public class XMPPService {
         this.maintainConnection();
     }
 
-
+    public void sendMessage(String message, String sender){
+        ChatManager chatManager = ChatManager.getInstanceFor(connection);
+        EntityBareJid jid = null;
+        try {
+            jid = JidCreate.entityBareFrom(sender);
+        } catch (XmppStringprepException e) {
+            log.error("could not get JID to send because {}", e.getMessage());
+            throw new RuntimeException(e);
+        }
+        Chat chat = chatManager.chatWith(jid);
+        try {
+            chat.send(message);
+        } catch (SmackException.NotConnectedException e) {
+            log.error("could not send message because {}", e.getMessage());
+        } catch (InterruptedException e) {
+            log.error("could not send message because {}", e.getMessage());
+        }
+    }
 }

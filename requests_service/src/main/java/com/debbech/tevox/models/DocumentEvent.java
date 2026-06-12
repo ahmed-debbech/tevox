@@ -4,14 +4,24 @@ import java.util.List;
 
 public class DocumentEvent {
     private String title;
+    private String fromJid;
     private List<String> imagePaths;
 
     @Override
     public String toString() {
         return "DocumentEvent{" +
                 "title='" + title + '\'' +
+                ", fromJid='" + fromJid + '\'' +
                 ", imagePaths=" + imagePaths +
                 '}';
+    }
+
+    public String getFromJid() {
+        return fromJid;
+    }
+
+    public void setFromJid(String fromJid) {
+        this.fromJid = fromJid;
     }
 
     public String getTitle() {

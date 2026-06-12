@@ -8,10 +8,8 @@ public class MainService {
     private static Logger log = LoggerFactory.getLogger(MainService.class);
 
     public static String execute1() {
-        XMPPService xmppService = new XMPPService();
-        xmppService.connect();
-
-        xmppService.listenToMessages();
+        XMPPService.getInstance().connect();
+        XMPPService.getInstance().listenToMessages();
         return null;
     }
 
@@ -19,12 +17,9 @@ public class MainService {
         log.info("connecting to rabbitmq...");
 
         try {
-            QueuesService rms = new QueuesService();
-            rms.defineAllQueues();
+            QueuesService.getInstance().defineAllQueues();
             log.info("connected to rabbitmq successfully");
             Thread.sleep(5000);
-
-            rms.publish();
         } catch (Exception e) {
             log.error("error defining queues {}", e.getStackTrace());
             throw new RuntimeException(e);

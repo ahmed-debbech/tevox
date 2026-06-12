@@ -5,11 +5,31 @@ public class Message implements Comparable<Message>{
     private String stanzaId;
     private String body;
     private MessageType messageType;
+    private String fromJid;
 
-    public Message(String stanzaId, String body, MessageType messageType){
+    @Override
+    public String toString() {
+        return "Message{" +
+                "stanzaId='" + stanzaId + '\'' +
+                ", body='" + body + '\'' +
+                ", messageType=" + messageType +
+                ", fromJid='" + fromJid + '\'' +
+                '}';
+    }
+
+    public Message(String stanzaId, String body, MessageType messageType, String fromJid) {
         this.stanzaId = stanzaId;
         this.body = body;
         this.messageType = messageType;
+        this.fromJid = fromJid;
+    }
+
+    public String getFromJid() {
+        return fromJid;
+    }
+
+    public void setFromJid(String fromJid) {
+        this.fromJid = fromJid;
     }
 
     @Override

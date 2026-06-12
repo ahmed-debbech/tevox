@@ -81,6 +81,8 @@ public class MessageProcessor {
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
         String json = ow.writeValueAsString(this.potentialEvent);
         log.info("event {}", json);
+        XMPPService.getInstance().sendMessage("PENDING with " + String.join(",", this.potentialEvent.getImagePaths()), this.potentialEvent.getFromJid());
+        QueuesService.getInstance().publish(json);
     }
 
     private void buildTransmittableEvent(){
@@ -90,7 +92,10 @@ public class MessageProcessor {
 
             if(potentialEvent == null){
                 this.potentialEvent = new DocumentEvent();
+                this.potentialEvent.setFromJid(msg.getFromJid());
             }
+
+            if(!potentialEvent.getFromJid().equals(msg.getFromJid())) continue;
 
             if((potentialEvent.getTitle() == null) || (potentialEvent.getTitle().isEmpty())){
                 if(!msg.getMessageType().equals(MessageType.TEXT)) continue;

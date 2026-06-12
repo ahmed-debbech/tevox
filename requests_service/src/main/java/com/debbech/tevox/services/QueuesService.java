@@ -9,14 +9,27 @@ public class QueuesService {
 
     private Logger log = LoggerFactory.getLogger(this.getClass());
 
-    private final RabbitMqService queues = new RabbitMqService();
+    private final RabbitMqService queues;
+    private static QueuesService instance = null;
 
-    public QueuesService() throws Exception {
+    private QueuesService() {
+        try {
+            this.queues = new RabbitMqService();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void publish(){
+    public static QueuesService getInstance(){
+        if(instance == null){
+            instance = new QueuesService();
+        }
+        return instance;
+    }
+
+    public void publish(String text){
         try {
-            //this.queues.publish("ocr_request_q", new String("yo").getBytes(StandardCharsets.UTF_8), null);
+            this.queues.publish("ocr_request_q", text.getBytes(StandardCharsets.UTF_8), null);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
