@@ -23,16 +23,21 @@ func ProcessScanImageEvent(msg []byte) error {
 		return errors.New("could not parse json for this request " + err.Error())
 	}
 	if !sanitize(request) {
-		return errors.New("the request doesn't look good " + err.Error())
+		return errors.New("the request doesn't look good")
 	}
 
-	if !checkFileExists(request.FileName) {
-		return errors.New("image file does not exist")
+	for i, v := range request.ImagePaths {
+		if !checkFileExists(v) {
+			return errors.New("image file number " + strconv.Itoa(i) + " does not exist")
+		}
 	}
 
-	textFileName, err := launchTesseract(request.FileName)
-	if err != nil {
-		return errors.New("something failed with tesseract :" + err.Error())
+	textFileName := "out_" + strconv.Itoa(int(time.Now().Unix()))
+	for _, v := range request.ImagePaths {
+		err := launchTesseract(v, textFileName)
+		if err != nil {
+			return errors.New("something failed with tesseract :" + err.Error())
+		}
 	}
 
 	response := model.ProcessTextToVoiceRequest{
@@ -56,19 +61,28 @@ func checkFileExists(filename string) bool {
 }
 
 func sanitize(request model.ScanImageEventRequest) bool {
-	if request.FileName == "" {
-		log.Println("FileName can not be empty")
+	if request.Title == "" {
+		log.Println("title can not be empty")
 		return false
+	}
+	if len(request.ImagePaths) == 0 {
+		log.Println("image paths can not be empty")
+		return false
+	}
+	for i, v := range request.ImagePaths {
+		if len(v) == 0 {
+			log.Println("image paths number " + strconv.Itoa(i) + "can not be empty")
+			return false
+		}
 	}
 	return true
 }
-func launchTesseract(fileName string) (string, error) {
+func launchTesseract(fileName string, textFileName string) error {
 
 	defer log.SetPrefix("")
 	log.SetPrefix("[TESSERACT-0] ")
 	// Start a long-running process, capture stdout and stderr
-	textFileName := "out_" + strconv.Itoa(int(time.Now().Unix()))
-	findCmd := cmd.NewCmd("sh", "-c", "tesseract --tessdata-dir ../tesseract /pic/"+fileName+" - -l eng > /text/"+textFileName)
+	findCmd := cmd.NewCmd("sh", "-c", "tesseract --tessdata-dir ../tesseract /pic/"+fileName+" - -l eng >> /text/"+textFileName)
 	statusChan := findCmd.Start() // non-blocking
 	log.Println("Started tesseract")
 	ticker := time.NewTicker(2 * time.Second)
@@ -97,7 +111,7 @@ func launchTesseract(fileName string) (string, error) {
 		} else {
 			log.Println("[STDERR]", strings.Join(finalStatus.Stderr, "\n[STDERR]")) //make this line out put to error file
 			log.Println("ERROR! Something went wrong when running tesseract, exit code:", finalStatus.Exit)
-			return "", errors.New("ERROR! Something went wrong when running tesseract")
+			return errors.New("ERROR! Something went wrong when running tesseract")
 		}
 	case <-time.After(10 * time.Second):
 		err := findCmd.Stop()
@@ -107,5 +121,5 @@ func launchTesseract(fileName string) (string, error) {
 		log.Println("[TIMEOUT] tevox killed tesseract")
 	}
 
-	return textFileName, nil
+	return nil
 }

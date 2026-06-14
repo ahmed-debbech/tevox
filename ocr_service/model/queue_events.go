@@ -1,7 +1,9 @@
 package model
 
 type ScanImageEventRequest struct {
-	FileName string `json:"fileName"`
+	Title      string   `json:"title"`
+	FromJid    string   `json:"fromJid"`
+	ImagePaths []string `json:"imagePaths"`
 }
 
 type ProcessTextToVoiceRequest struct {

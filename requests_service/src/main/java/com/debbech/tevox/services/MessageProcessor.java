@@ -97,6 +97,12 @@ public class MessageProcessor {
 
             if(!potentialEvent.getFromJid().equals(msg.getFromJid())) continue;
 
+            if (msg.getBody().equals("abort")) {
+                log.info("request aborting event!");
+                this.potentialEvent = null;
+                XMPPService.getInstance().sendMessage("ABORTED!", msg.getFromJid());
+                continue;
+            }
             if((potentialEvent.getTitle() == null) || (potentialEvent.getTitle().isEmpty())){
                 if(!msg.getMessageType().equals(MessageType.TEXT)) continue;
                 if(!msg.getBody().startsWith("a ")) continue;
@@ -112,7 +118,7 @@ public class MessageProcessor {
                 if(potentialEvent.getImagePaths() == null){
                     potentialEvent.setImagePaths(new ArrayList<>());
                 }
-                potentialEvent.getImagePaths().add(path);
+                potentialEvent.getImagePaths().add(path.substring(8));
             }
 
             if(msg.getMessageType().equals(MessageType.TEXT)){
