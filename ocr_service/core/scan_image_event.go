@@ -41,6 +41,7 @@ func ProcessScanImageEvent(msg []byte) error {
 	}
 
 	response := model.ProcessTextToVoiceRequest{
+		Title:        request.Title,
 		TextFileName: textFileName,
 	}
 	responseBytes, _ := json.Marshal(response)

@@ -30,7 +30,7 @@ func ProcessTextToVoiceEvent(msg []byte) error {
 		return errors.New("image file does not exist ")
 	}
 
-	if err := launchPiper(request.TextFileName); err != nil {
+	if err := launchPiper(request.Title, request.TextFileName); err != nil {
 		return errors.New("something failed with tesseract :" + err.Error())
 	}
 	if err := queues.Publish(config.QueuesNames["B_QUEUE"].Name, []byte("done"), nil); err != nil {
@@ -40,12 +40,12 @@ func ProcessTextToVoiceEvent(msg []byte) error {
 	return nil
 }
 
-func launchPiper(fileName string) error {
+func launchPiper(title string, fileName string) error {
 	defer log.SetPrefix("")
 	log.SetPrefix("[PIPER-0] ")
 	// Start a long-running process, capture stdout and stderr
 	vocalPath := os.Getenv("VOICE_LANGUAGE") + "-" + os.Getenv("VOICE_NAME") + "-" + os.Getenv("VOICE_QUALITY")
-	findCmd := cmd.NewCmd("sh", "-c", "piper -m /v/"+vocalPath+".onnx --input-file /input/"+fileName+" --output_file /output/hello.wav")
+	findCmd := cmd.NewCmd("sh", "-c", "piper -m /v/"+vocalPath+".onnx --input-file /input/"+fileName+" --output_file /output/"+title+".wav")
 	statusChan := findCmd.Start() // non-blocking
 	log.Println("Started piper")
 	ticker := time.NewTicker(2 * time.Second)
