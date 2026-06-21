@@ -35,6 +35,22 @@ services:
     networks:
       - tevox_net
 
+  upload_service:
+    build: 
+      context: .
+      dockerfile: upload_service/Dockerfile
+      args:
+        SFTP_HOSTNAME: ${SFTP_HOSTNAME}
+        SFTP_USERNAME: ${SFTP_USERNAME}
+        SFTP_PWD: ${SFTP_PWD}
+        SFTP_PATH: ${SFTP_PATH}
+    volumes:
+      - ${PATH_VOICE_OUT}:/output
+    depends_on:
+      - rabbitmq
+    networks:
+      - tevox_net
+
   requests_service:
     build: 
       context: .

@@ -22,7 +22,7 @@ func ScanImageEventConsumer(feed <-chan amqp091.Delivery, queueName string) {
 	for msg := range feed {
 
 		log.SetPrefix("DELIVERY[" + strconv.Itoa(int(msg.DeliveryTag)) + "] ")
-		log.Println("Message received from queue", msg.Body)
+		log.Println("Message received from queue", queueName)
 
 		if val, ok := msg.Headers["x-death"]; ok {
 

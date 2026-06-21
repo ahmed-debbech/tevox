@@ -33,7 +33,7 @@ func ProcessTextToVoiceEvent(msg []byte) error {
 	if err := launchPiper(request.Title, request.TextFileName); err != nil {
 		return errors.New("something failed with tesseract :" + err.Error())
 	}
-	if err := queues.Publish(config.QueuesNames["B_QUEUE"].Name, []byte("done"), nil); err != nil {
+	if err := queues.Publish(config.QueuesNames["B_QUEUE"].Name, []byte(request.Title), nil); err != nil {
 		log.Println(err)
 	}
 	log.Println("Processed text to voice, pushed to queue.")

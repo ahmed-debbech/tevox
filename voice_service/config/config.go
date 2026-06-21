@@ -8,7 +8,12 @@ var (
 			Dlq:      QueueInternals{Name: "ocr_response_dlq_q", Ttl: 0},
 			Retry:    QueueInternals{Name: "ocr_response_retry_q", Ttl: 5000},
 		},
-		"B_QUEUE": QueueConf{Name: "voice_output_q", Consumer: false},
+		"B_QUEUE": QueueConf{
+			Name:     "voice_output_q",
+			Dlq:      QueueInternals{Name: "voice_output_dlq_q", Ttl: 0},
+			Retry:    QueueInternals{Name: "voice_output_retry_q", Ttl: 5000},
+			Consumer: false,
+		},
 	}
 
 	RabbitMqUrl = "amqp://guest:guest@rabbitmq:5672/"
