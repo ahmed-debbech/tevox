@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	sftp "github.com/moov-io/go-sftp"
@@ -15,14 +16,15 @@ type Uploader interface {
 type SftpUploader struct {
 }
 
-func (su SftpUploader) Upload(filepath string, destination string) error {
+func (su SftpUploader) Upload(path string, destination string) error {
 
 	log.Println("uploading file to sftp server")
 	p := strings.Split(destination, string(0b01))
 	clientConfig := &sftp.ClientConfig{
-		Hostname: p[0],
-		Username: p[1],
-		Password: p[2],
+		Hostname:       p[0],
+		Username:       p[1],
+		Password:       p[2],
+		MaxConnections: 1,
 	}
 
 	client, err := sftp.NewClient(nil, clientConfig)
@@ -39,12 +41,13 @@ func (su SftpUploader) Upload(filepath string, destination string) error {
 	}
 
 	log.Println("connected to SFTP server successfully!")
-	fileData, err := os.Open(filepath)
+	fileData, err := os.Open(path)
 
-	err = client.UploadFile(p[3], fileData)
+	lastPath := filepath.Join(p[3], filepath.Base(path))
+	err = client.UploadFile(lastPath, fileData)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println("file " + filepath + " uploaded to server " + p[3] + " successfully!")
+	log.Println("file " + path + " uploaded to server " + p[3] + " successfully!")
 	return nil
 }
