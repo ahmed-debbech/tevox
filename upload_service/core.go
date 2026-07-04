@@ -29,8 +29,7 @@ func UploadVoiceToNavidrome(msg []byte) error {
 
 func upload(fileName string) error {
 	var su Uploader = SftpUploader{}
-	su.Upload("/output/"+fileName, os.Getenv("SFTP_HOSTNAME")+string(0b01)+os.Getenv("SFTP_USERNAME")+string(0b01)+os.Getenv("SFTP_PWD")+string(0b01)+os.Getenv("SFTP_PATH"))
-	return nil
+	return su.Upload("/output/"+fileName, os.Getenv("SFTP_HOSTNAME")+string(0b01)+os.Getenv("SFTP_USERNAME")+string(0b01)+os.Getenv("SFTP_PWD")+string(0b01)+os.Getenv("SFTP_PATH"))
 }
 
 func checkFileExists(filename string) bool {

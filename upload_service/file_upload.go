@@ -29,11 +29,13 @@ func (su SftpUploader) Upload(path string, destination string) error {
 
 	client, err := sftp.NewClient(nil, clientConfig)
 	if err != nil {
-		log.Fatal(err)
+		log.Println("error creating sftp client because: ", err)
+		return err
 	}
 
 	if err := client.Ping(); err != nil {
-		log.Fatal(err)
+		log.Println("error pinging sftp server because: ", err)
+		return err
 	}
 
 	if client != nil {
@@ -46,7 +48,8 @@ func (su SftpUploader) Upload(path string, destination string) error {
 	lastPath := filepath.Join(p[3], filepath.Base(path))
 	err = client.UploadFile(lastPath, fileData)
 	if err != nil {
-		log.Fatal(err)
+		log.Println("error uploading file to sftp server ", err)
+		return err
 	}
 	log.Println("file " + path + " uploaded to server " + p[3] + " successfully!")
 	return nil
