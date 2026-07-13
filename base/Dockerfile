@@ -22,21 +22,31 @@ RUN apt-get update &&  apt-get install -y g++ \
 
 RUN apt-get install -y git
 
-# compiling and installing go 1.4
-WORKDIR /go1.4
-
-RUN git clone -b release-branch.go1.4 https://go.googlesource.com/go
-
-WORKDIR /go1.4/go/src
-
-RUN export CGO_ENABLED=0 && ./make.bash
-
-# compiling and instaling go1.17
+# installing go 1.17
 WORKDIR /go1.17
 
-RUN git clone --depth 1 -b go1.17 https://go.googlesource.com/go 
+RUN ARCH=$(uname -m) && \
+    echo "Architecture: $ARCH" && \
+    case "$ARCH" in \
+        x86_64) wget -O go.tar.gz https://go.dev/dl/go1.17rc2.linux-amd64.tar.gz ;; \
+        amd64) wget -O go.tar.gz https://go.dev/dl/go1.17rc2.linux-amd64.tar.gz  ;; \
+        aarch64) wget -O go.tar.gz https://go.dev/dl/go1.17rc2.linux-arm64.tar.gz ;; \
+        arm64) wget -O go.tar.gz https://go.dev/dl/go1.17rc2.linux-arm64.tar.gz ;; \
+        *) echo "Unknown: $ARCH"; exit 1 ;; \
+    esac
 
-RUN cd go/src && export GOROOT_BOOTSTRAP=/go1.4/go && ./make.bash
+
+RUN tar -xvf go.tar.gz
+
+ENV GOROOT=/go1.17/go
+ENV GOPATH=/go1.17/go
+ENV PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+
+RUN echo $GOROOT
+RUN echo $GOPATH
+RUN echo $PATH
+
+RUN go version
 
 # compiling and instaling go1.21.13
 WORKDIR /go1.21.13
@@ -62,4 +72,4 @@ RUN cd go/src && export GOROOT_BOOTSTRAP=/go1.22.6/go && ./make.bash
 
 WORKDIR /
 
-RUN rm -r go1.22.6 go1.21.13 go1.17 go1.4
+RUN rm -r go1.22.6 go1.21.13 go1.17
