@@ -2,8 +2,8 @@
 
 if [[ $1 == "build" ]]; then
     docker compose down || true
+    mkdir .m2 -p
     docker compose build base
-    mkdir requests_service/.m2 -p
     docker compose build
     docker compose up --build --no-attach rabbitmq
 fi
