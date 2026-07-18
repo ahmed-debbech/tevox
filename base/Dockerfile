@@ -73,3 +73,7 @@ RUN cd go/src && export GOROOT_BOOTSTRAP=/go1.22.6/go && ./make.bash
 WORKDIR /
 
 RUN rm -r go1.22.6 go1.21.13 go1.17
+
+ENV GOROOT=/go1.24.4/go
+ENV GOPATH=/go1.24.4/go
+ENV PATH=$GOPATH/bin:$GOROOT/bin:$PATH
