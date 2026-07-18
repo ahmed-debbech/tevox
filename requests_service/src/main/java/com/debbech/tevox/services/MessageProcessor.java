@@ -1,16 +1,5 @@
 package com.debbech.tevox.services;
 
-import com.debbech.tevox.models.DocumentEvent;
-import com.debbech.tevox.models.Message;
-import com.debbech.tevox.models.MessageType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.ObjectWriter;
-
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -18,6 +7,19 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.debbech.tevox.models.DocumentEvent;
+import com.debbech.tevox.models.Message;
+import com.debbech.tevox.models.MessageType;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectWriter;
 
 public class MessageProcessor {
 
@@ -123,8 +125,13 @@ public class MessageProcessor {
 
             if(msg.getMessageType().equals(MessageType.TEXT)){
                 if(!msg.getBody().equals("b")) continue;
+
                 log.info("a new event is about to get transmitted {}", this.potentialEvent);
-                emitEvent();
+                if (this.isEventGood()) {
+                    emitEvent();   
+                }else{
+                    log.info("event looks not good, skipping...");
+                }
                 this.potentialEvent = null;
             }
 
@@ -133,5 +140,15 @@ public class MessageProcessor {
                 Thread.sleep(5000);
             } catch (InterruptedException ignored) {}
         }
+    }
+
+    private boolean isEventGood(){
+        if((this.potentialEvent == null) || (this.potentialEvent.getFromJid().equals(""))) return false;
+        
+        if((this.potentialEvent.getImagePaths() == null) || (this.potentialEvent.getImagePaths().isEmpty())) return false;
+        
+        if((this.potentialEvent.getTitle() == null) || (this.potentialEvent.getTitle().equals(""))) return false;
+        
+        return true;
     }
 }
