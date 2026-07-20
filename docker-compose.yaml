@@ -10,6 +10,7 @@ services:
       dockerfile: ocr_service/Dockerfile
       args:
         TESSERACT_VERSION: ${TESSERACT_VERSION}
+    restart: unless-stopped
     volumes:
       - ${PATH_TEXT_OUT}:/text
       - ${PATH_PIC_IN}:/pic/
@@ -27,6 +28,7 @@ services:
         VOICE_QUALITY: ${VOICE_QUALITY}
         VOICE_LANGUAGE: ${VOICE_LANGUAGE}
         VOICE_LANGUAGE_FAMILY: ${VOICE_LANGUAGE_FAMILY}
+    restart: unless-stopped
     volumes:
       - ${PATH_VOICE_OUT}:/output
       - ${PATH_TEXT_OUT}:/input/
@@ -44,6 +46,7 @@ services:
         SFTP_USERNAME: ${SFTP_USERNAME}
         SFTP_PWD: ${SFTP_PWD}
         SFTP_PATH: ${SFTP_PATH}
+    restart: unless-stopped
     volumes:
       - ${PATH_VOICE_OUT}:/output
     depends_on:
@@ -55,6 +58,7 @@ services:
     build: 
       context: .
       dockerfile: requests_service/Dockerfile
+    restart: unless-stopped
     volumes:
       - ${PATH_PIC_IN}:/output
     depends_on:
@@ -64,6 +68,7 @@ services:
 
   rabbitmq:
     image: rabbitmq:4.3.0-rc.0-management-alpine
+    restart: unless-stopped
     ports:
       - "5672:5672"
       - "15672:15672"
