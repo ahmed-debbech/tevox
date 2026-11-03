@@ -16,7 +16,7 @@ public class QueuesService {
 
     public void publish(){
         try {
-            this.queues.publish("ocr_request_q", new String("yo").getBytes(StandardCharsets.UTF_8), null);
+            //this.queues.publish("ocr_request_q", new String("yo").getBytes(StandardCharsets.UTF_8), null);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

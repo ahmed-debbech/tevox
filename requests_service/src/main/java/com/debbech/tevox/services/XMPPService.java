@@ -81,14 +81,14 @@ public class XMPPService {
 
                     com.debbech.tevox.models.Message m = null;
                     if(xml.contains("<x xmlns='jabber:x:oob'>")){ //if it is an image
-                        log.info("processing Image coming from XMPP server ({})", message.getStanzaId());
+                        log.info("processing Image coming from XMPP server");
                         String id = message.getStanzaId();
                         String body = message.getBody();
                         m = new com.debbech.tevox.models.Message(id, body, MessageType.IMAGE);
                     }else{
                         if((xml.contains("<body>") &&
-                                (!xml.substring(xml.indexOf("<body>")+7).startsWith("</bo")))){
-                            log.info("processing text message coming from XMPP server ({})", message.getStanzaId());
+                                (!xml.substring(xml.indexOf("<body>")+6).startsWith("</bo")))){
+                            log.info("processing text message coming from XMPP server");
                             String id = message.getStanzaId();
                             String body = message.getBody();
                             m = new com.debbech.tevox.models.Message(id, body, MessageType.TEXT);
